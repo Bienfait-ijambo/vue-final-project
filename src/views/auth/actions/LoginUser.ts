@@ -1,37 +1,52 @@
-import { APP } from "@/helper/APP";
+import { APP } from '@/helper/APP'
+import { showError } from '@/helper/ToastNofication'
+import { makeHttpReq } from '@/helper/makeHttpReq'
+import { ref } from 'vue'
 
-export interface ILoginInput{
-    email:string
-    password:string
+export interface ILoginInput {
+  email: string
+  password: string
 }
 
-
-export type LoginResponseType={
-    user:{
-        name:string;
-        email:string
-    },
-    token:string
-    message:string
-    isLogged:boolean
+export type LoginResponseType = {
+  user: {
+    name: string
+    email: string
+  }
+  token: string
+  message: string
+  isLogged: boolean
 }
+export const loginInput = ref<ILoginInput>({
+  email: '',
+  password: ''
+})
 
-export function loginUser(input:ILoginInput){
+export function useLoginUser() {
+  const loading = ref(false)
+  async function loginUser() {
+    try {
+      loading.value = true
+      const data = await makeHttpReq<ILoginInput, LoginResponseType>(
+        'login',
+        'POST',
+        loginInput.value
+      )
 
-    return new Promise<LoginResponseType>(async(resolve, reject) =>{
+      loading.value = false
+      if (data.isLogged) {
+        loginInput.value = {} as ILoginInput
+        localStorage.setItem('userData', JSON.stringify(data))
+        window.location.href = '/admin'
+      } else {
+        showError(data.message)
+      }
+    } catch (error) {
+      loading.value = false
 
-        try {
-            const res=await fetch(`${APP.laravelApiBaseURL}/login`,{
-                method: 'POST',
-                headers:{
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(input)
-            })
-            const data = await res.json()
-            resolve(data)
-        } catch (error) {
-            reject(error)
-        }
-    })
+      showError((error as Error).message)
+    }
+  }
+
+  return { loading, loginUser }
 }

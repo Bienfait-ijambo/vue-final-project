@@ -1,16 +1,9 @@
 <script lang="ts" setup>
 import { useVuelidate } from '@vuelidate/core'
 import { required, email } from '@vuelidate/validators'
-import { ref } from 'vue'
-import { createUser, type IRegisterInput } from './actions/CreateUser'
+import { createUser, registerInput, useCreateUser, type IRegisterInput } from './actions/CreateUser'
 import Error from '@/components/Error.vue'
-import { showError, successMsg } from '@/helper/ToastNofication'
 import BaseBtn from '@/components/BaseBtn.vue'
-const registerInput = ref<IRegisterInput>({
-  name: '',
-  email: '',
-  password: ''
-})
 
 const rules = {
   name: { required }, // Matches state.firstName
@@ -19,25 +12,18 @@ const rules = {
 }
 
 const v$ = useVuelidate(rules, registerInput.value)
-const loading = ref(false)
+
+const { loading, createUser } = useCreateUser()
+
 async function registerUser() {
   const result = await v$.value.$validate()
 
   if (!result) {
     return
   }
-  try {
-    loading.value = true
-    const data = await createUser(registerInput.value)
-    successMsg(data.message)
-    v$.value.$reset()
-    loading.value = false
-    registerInput.value={} as IRegisterInput
-  } catch (error) {
-    loading.value = false
 
-    showError((error as Error).message)
-  }
+  await createUser()
+  v$.value.$reset()
 
   // request createUser
 }
@@ -75,7 +61,6 @@ async function registerUser() {
               <br />
               <br />
               <div class="form-group">
-               
                 <BaseBtn :loading="loading" label="Register" />
               </div>
             </form>

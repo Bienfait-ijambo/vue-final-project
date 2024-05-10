@@ -4,13 +4,10 @@ import { required } from '@vuelidate/validators'
 import { ref } from 'vue'
 import Error from '@/components/Error.vue'
 import BaseBtn from '@/components/BaseBtn.vue'
-import type { ICreatePostInput } from './actions/CreatePost'
+import { postInput, useCreatePost, type ICreatePostInput } from './actions/CreatePost'
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 
-const postInput = ref<ICreatePostInput>({
-  title: '',
-  post_content: ''
-})
+
 
 const rules = {
   title: { required },
@@ -18,8 +15,7 @@ const rules = {
 }
 
 const v$ = useVuelidate(rules, postInput.value)
-const loading = ref(false)
-
+const {loading,createPost}=useCreatePost()
 
 async function submitPost() {
   const result = await v$.value.$validate()
@@ -27,6 +23,7 @@ async function submitPost() {
   if (!result) {
     return
   }
+  await createPost()
 }
 </script>
 <template>

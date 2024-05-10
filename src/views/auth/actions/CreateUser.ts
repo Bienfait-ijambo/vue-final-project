@@ -1,37 +1,44 @@
-import { APP } from "@/helper/APP";
+import { APP } from '@/helper/APP'
+import { showError, successMsg } from '@/helper/ToastNofication'
+import { makeHttpReq } from '@/helper/makeHttpReq'
+import { ref } from 'vue'
 
-export interface IRegisterInput{
-    name:string;
-    email:string
-    password:string
+export interface IRegisterInput {
+  name: string
+  email: string
+  password: string
 }
 
-export type RegisterResponseType={
-    user:{
-        id:number
-        name:string;
-        email:string
-    },
-    message:string
+export type RegisterResponseType = {
+  user: {
+    id: number
+    name: string
+    email: string
+  }
+  message: string
 }
+export const registerInput = ref<IRegisterInput>({
+  name: '',
+  email: '',
+  password: ''
+})
 
+export function useCreateUser() {
+  const loading = ref(false)
+  async function createUser() {
+    try {
+      loading.value = true
+      const data = await makeHttpReq<IRegisterInput, RegisterResponseType>
+      ('register', 'POST',registerInput.value)
+      successMsg(data.message)
 
-export function createUser(input:IRegisterInput){
+      loading.value = false
+      registerInput.value = {} as IRegisterInput
+    } catch (error) {
+      loading.value = false
 
-    return new Promise<RegisterResponseType>(async(resolve, reject) =>{
-
-        try {
-            const res=await fetch(`${APP.laravelApiBaseURL}/register`,{
-                method: 'POST',
-                headers:{
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(input)
-            })
-            const data = await res.json()
-            resolve(data)
-        } catch (error) {
-            reject(error)
-        }
-    })
+      showError((error as Error).message)
+    }
+  }
+  return { loading, createUser }
 }

@@ -1,16 +1,10 @@
 <script lang="ts" setup>
 import { useVuelidate } from '@vuelidate/core'
 import { required, email } from '@vuelidate/validators'
-import { ref } from 'vue'
 import Error from '@/components/Error.vue'
-import { loginUser, type ILoginInput } from './actions/LoginUser'
-import { showError, successMsg } from '@/helper/ToastNofication'
+import { loginInput, loginUser, useLoginUser, type ILoginInput } from './actions/LoginUser'
 import BaseBtn from '@/components/BaseBtn.vue'
 
-const loginInput = ref<ILoginInput>({
-  email: '',
-  password: ''
-})
 
 const rules = {
   email: { required, email },
@@ -18,7 +12,7 @@ const rules = {
 }
 
 const v$ = useVuelidate(rules, loginInput.value)
-const loading = ref(false)
+const {loading,loginUser}=useLoginUser()
 
 async function submitLogin() {
   const result = await v$.value.$validate()
@@ -26,24 +20,8 @@ async function submitLogin() {
   if (!result) {
     return
   }
-  try {
-    loading.value = true
-    const data = await loginUser(loginInput.value)
-    v$.value.$reset()
-    loading.value = false
-    if (data.isLogged) {
-      loginInput.value = {} as ILoginInput
-      localStorage.setItem('userData', JSON.stringify(data))
-      window.location.href="/admin"
-    }else{
-      showError(data.message)
-    }
-
-  } catch (error) {
-    loading.value = false
-
-    showError((error as Error).message)
-  }
+  await loginUser()
+ 
 }
 </script>
 <template>
