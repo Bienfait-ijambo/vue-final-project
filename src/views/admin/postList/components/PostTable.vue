@@ -4,8 +4,13 @@ import type { GetPostResponseType } from '../actions/GetPost'
 defineProps<{
   posts: Array<GetPostResponseType>| undefined
 }>()
+
 const emit=defineEmits<{
   (e:'deletePost',postId:number):void
+  (e:'updatePost',post:GetPostResponseType):void
+  (e:'showModal',post:GetPostResponseType):void
+
+
 }>()
 </script>
 
@@ -24,6 +29,7 @@ const emit=defineEmits<{
 
     <tbody>
       <tr v-for="post in posts" :key="post.id">
+      
         <td>{{post.id}}</td>
         <td>
           <img style="height: 55px;" :src="post.image"/>
@@ -32,10 +38,10 @@ const emit=defineEmits<{
           {{ post.title }}
         </td>
 
-        <td><button class="btn btn-info btn-sm">Upload</button></td>
-        <td><button class="btn btn-outline-primary btn-sm">Edit</button></td>
+        <td><button @click="emit('showModal',post)" class="btn btn-info btn-sm">Upload</button></td>
+        <td><button @click="emit('updatePost',post)" class="btn btn-outline-primary btn-sm">Edit</button></td>
         <td>
-          <button @click="emit('deletePost',post.id)" class="btn btn-outline-danger btn-sm">Delete</button>
+          <button @click="emit('deletePost',post.id)"  class="btn btn-outline-danger btn-sm">Delete</button>
         </td>
       </tr>
     </tbody>
