@@ -23,9 +23,9 @@ const navigation = ref( [
   
 ]);
 
-// const emit=defineEmits<{
-//   (e:'logout'):void
-// }>()
+const emit=defineEmits<{
+  (e:'logout'):void
+}>()
 </script>
 <template>
   <nav
@@ -61,7 +61,7 @@ const navigation = ref( [
           </RouterLink>
         </li>
 
-        <li class="nav-item" style="cursor: pointer" >
+        <li class="nav-item" @click="emit('logout')" style="cursor: pointer" >
           <a class="nav-link" >
             <i class="bi bi-box-arrow-right"></i>
             Logout

@@ -1,13 +1,51 @@
 <script lang="ts" setup>
+import { onMounted } from 'vue'
 import NavBar from './components/NavBar.vue'
+import { makeHttpReq } from '@/helper/makeHttpReq'
+import { showError, successMsg } from '@/helper/ToastNofication'
+import { getUserData } from '@/helper/getUserData'
+
+async function checkUserLoggedIn() {
+  try {
+    const data = await makeHttpReq<undefined, { success: boolean; status: number }>(
+      `check/user/loggedin`,
+      'GET',
+      undefined
+    )
+    if (typeof data.status !== 'undefined') {
+      window.location.href = '/login'
+    }
+  } catch (error) {
+    showError((error as Error).message)
+  }
+}
+
+async function logout() {
+  const userData = getUserData()
+  try {
+    const data = await makeHttpReq<{ userId: number | undefined }, { message: string }>(
+      `logout`,
+      'POST',
+      { userId: userData?.user?.id }
+    )
+    successMsg(data.message)
+
+    localStorage.clear()
+    window.location.href = '/login'
+  } catch (error) {
+    showError((error as Error).message)
+  }
+}
+onMounted(async () => {
+  await checkUserLoggedIn()
+})
 </script>
 <template>
-    <div class="container">
-    
-      <div class="container-fluid">
+  <div class="container">
+    <div class="container-fluid">
       <div class="row">
-        <NavBar  />
-  
+        <NavBar @logout="logout" />
+
         <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 bg-pages">
           <br /><br />
           <router-view v-slot="{ Component, route }">
@@ -20,145 +58,145 @@ import NavBar from './components/NavBar.vue'
         </main>
       </div>
     </div>
-  
-    </div>
-  </template>
-  
-  <style>
-  .fade-enter-active,
-  .fade-leave-active {
-    transition-duration: 0.3s;
-    transition-property: opacity;
-    transition-timing-function: ease;
+  </div>
+</template>
+
+<style>
+.fade-enter-active,
+.fade-leave-active {
+  transition-duration: 0.3s;
+  transition-property: opacity;
+  transition-timing-function: ease;
+}
+
+.fade-enter,
+.fade-leave-active {
+  opacity: 0;
+}
+
+/* input errors  */
+
+.navbar-nav .nav-item img {
+  padding: 10px;
+  border-radius: 25px;
+  position: relative;
+  right: 20px;
+}
+
+.nav-link {
+  display: block;
+  padding: 0.5rem 1rem;
+  color: #212529;
+  text-decoration: none;
+  transition:
+    color 0.15s ease-in-out,
+    background-color 0.15s ease-in-out,
+    border-color 0.15s ease-in-out;
+}
+
+body {
+  font-size: 0.875rem;
+}
+
+.feather {
+  width: 16px;
+  height: 16px;
+  vertical-align: text-bottom;
+}
+
+.bd-placeholder-img {
+  font-size: 1.125rem;
+  text-anchor: middle;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+}
+
+@media (min-width: 768px) {
+  .bd-placeholder-img-lg {
+    font-size: 3.5rem;
   }
-  
-  .fade-enter,
-  .fade-leave-active {
-    opacity: 0;
-  }
-  
-  /* input errors  */
-  
-  
-  .navbar-nav .nav-item img {
-    padding: 10px;
-    border-radius: 25px;
-    position: relative;
-    right: 20px;
-  }
-  
-  .nav-link {
-    display: block;
-    padding: 0.5rem 1rem;
-    color: #212529;
-    text-decoration: none;
-    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out,
-      border-color 0.15s ease-in-out;
-  }
-  
-  body {
-    font-size: 0.875rem;
-  }
-  
-  .feather {
-    width: 16px;
-    height: 16px;
-    vertical-align: text-bottom;
-  }
-  
-  .bd-placeholder-img {
-    font-size: 1.125rem;
-    text-anchor: middle;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    user-select: none;
-  }
-  
-  @media (min-width: 768px) {
-    .bd-placeholder-img-lg {
-      font-size: 3.5rem;
-    }
-  }
-  
-  /*
+}
+
+/*
    * Sidebar
    */
-  
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 100;
+  padding: 48px 0 0;
+  box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 767.98px) {
   .sidebar {
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    z-index: 100;
-    padding: 48px 0 0;
-    box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.1);
+    top: 5rem;
   }
-  
-  @media (max-width: 767.98px) {
-    .sidebar {
-      top: 5rem;
-    }
-  }
-  
-  .sidebar-sticky {
-    position: relative;
-    top: 0;
-    height: calc(100vh - 48px);
-    padding-top: 0.5rem;
-    overflow-x: hidden;
-    overflow-y: auto;
-    /* Scrollable contents if viewport is shorter than content. */
-  }
-  
-  .sidebar .nav-link {
-    font-weight: 500;
-    color: #333;
-  }
-  
-  .sidebar .nav-link .feather {
-    margin-right: 4px;
-    color: #727272;
-  }
-  
-  .sidebar .nav-link.active {
-    color: #2470dc;
-  }
-  
-  .sidebar .nav-link:hover .feather,
-  .sidebar .nav-link.active .feather {
-    color: inherit;
-  }
-  
-  .sidebar-heading {
-    font-size: 0.75rem;
-    text-transform: uppercase;
-  }
-  
-  /*
+}
+
+.sidebar-sticky {
+  position: relative;
+  top: 0;
+  height: calc(100vh - 48px);
+  padding-top: 0.5rem;
+  overflow-x: hidden;
+  overflow-y: auto;
+  /* Scrollable contents if viewport is shorter than content. */
+}
+
+.sidebar .nav-link {
+  font-weight: 500;
+  color: #333;
+}
+
+.sidebar .nav-link .feather {
+  margin-right: 4px;
+  color: #727272;
+}
+
+.sidebar .nav-link.active {
+  color: #2470dc;
+}
+
+.sidebar .nav-link:hover .feather,
+.sidebar .nav-link.active .feather {
+  color: inherit;
+}
+
+.sidebar-heading {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+
+/*
    * Navbar
    */
-  
-  .navbar-brand {
-    padding-top: 0.75rem;
-    padding-bottom: 0.75rem;
-    font-size: 1rem;
-    background-color: rgba(0, 0, 0, 0.25);
-    box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.25);
-  }
-  
-  .navbar .navbar-toggler {
-    top: 0.25rem;
-    right: 1rem;
-  }
-  
-  .form-control-dark {
-    color: #fff;
-    background-color: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.1);
-  }
-  
-  .form-control-dark:focus {
-    border-color: transparent;
-    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.25);
-  }
-  </style>
+
+.navbar-brand {
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+  font-size: 1rem;
+  background-color: rgba(0, 0, 0, 0.25);
+  box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.25);
+}
+
+.navbar .navbar-toggler {
+  top: 0.25rem;
+  right: 1rem;
+}
+
+.form-control-dark {
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.form-control-dark:focus {
+  border-color: transparent;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.25);
+}
+</style>

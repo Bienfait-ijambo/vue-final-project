@@ -10,6 +10,7 @@ export interface ILoginInput {
 
 export type LoginResponseType = {
   user: {
+    id:number
     name: string
     email: string
   }
